@@ -4,7 +4,7 @@ Ask questions about a PDF from the command line. The script splits the PDF into 
 
 ## How it works
 
-1. **Load** the PDF with `PyPDFLoader`
+1. **Load** the PDF with `DirectoryLoader`
 2. **Split** it into overlapping chunks (`RecursiveCharacterTextSplitter`)
 3. **Embed** the chunks locally with a Hugging Face model
 4. **Store** the vectors in a persistent Chroma database
@@ -13,7 +13,7 @@ Ask questions about a PDF from the command line. The script splits the PDF into 
 
 ## Requirements
 
-- Python 3.10 or newer
+- Python 3.11 or newer
 - [Ollama](https://ollama.com/download) installed and running
 - An Ollama model (local, or a `-cloud` model such as `gemma4:31b-cloud`)
 - Internet access on first run (to download the embedding model)
@@ -60,9 +60,9 @@ ollama list
 Edit the config block at the top of the script:
 
 ```python
-PDF_PATH = "handbook.pdf"                            # your PDF file
+PDF_PATH = "./data"                            # your Dir to files/pdfs
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-LLM_MODEL = "gemma4:31b-cloud"                       # must match `ollama list`
+LLM_MODEL = "gemma4:31b-cloud"                       # must have it otherwise it wont work 
 CHROMA_DIR = "./chroma_db"
 CHUNK_SIZE = 1000
 CHUNK_OVERLAP = 150
@@ -72,7 +72,7 @@ TOP_K = 4
 Make sure the script uses the config values:
 
 ```python
-docs = PyPDFLoader(PDF_PATH).load()
+docs = DirectoryLoader(PDF_PATH, glob="**/*.pdf", loader_cls=PyPDFLoader, show_progress=True).load()
 embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
 ```
 
@@ -89,17 +89,12 @@ embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
 
 Put your PDF in the project folder, then run:
 
-```bash
-python rag.py
-```
-
-```
-Loaded 42 pages, split into 130 chunks.
 
 Ask a question (or 'quit'): What is the vacation policy?
 
-Answer: ...
-```
+Answer: 
+
+![The Chat b/w me and llm](image.png)
 
 Type `quit`, `exit` or `q` to stop.
 
@@ -143,8 +138,8 @@ Try raising `TOP_K` (for example to 6) or `CHUNK_SIZE`, or rephrase the question
 
 ```
 .
-├── rag.py
-├── handbook.pdf
+├── all.ipynb        # all u need to chec is this 
+├── data/            # put ur pdfs here for RAG 
 ├── requirements.txt
 ├── README.md
 └── chroma_db/        # created automatically
